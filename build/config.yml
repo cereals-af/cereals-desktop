@@ -1,0 +1,28 @@
+version: '3'
+info:
+  companyName: cereals
+  productName: cereals
+  productIdentifier: cn.creals.desktop
+  description: Local Kubernetes workspace
+  version: 1.0.0
+dev_mode:
+  root_path: .
+  log_level: warn
+  debounce: 1000
+  ignore:
+    dir: [.git, frontend, bin, tools]
+    file: ['*_test.go']
+    watched_extension: ['*.go']
+    git_ignore: true
+  executes:
+    - cmd: wails3 task dev:build
+      type: blocking
+    - cmd: wails3 task dev:frontend
+      type: background
+      readiness:
+        http: http://localhost:9245/
+        timeout: 60s
+        interval: 200ms
+    - cmd: wails3 task run
+      type: primary
+      exit_policy: shutdown

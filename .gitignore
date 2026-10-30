@@ -1,0 +1,28 @@
+/bin/
+/frontend/node_modules/
+/frontend/dist/*
+!/frontend/dist/.gitkeep
+/frontend/test-results/
+/frontend/playwright-report/
+/.DS_Store
+*.log
+/coverage.out
+/.test-env/
+*.tsbuildinfo
+/installer_windows_amd64.syso
+
+# Local planning, implementation notes and historical acceptance records
+AGENTS.md
+/.local-docs/
+/docs/*-plan.md
+/docs/plans/
+
+# Local credentials and environment overrides
+/.kube/
+/kubeconfig
+/kubeconfig.*
+/.env
+/.env.*
+!/.env.example
+/frontend/.env.local
+/frontend/.env.*.local

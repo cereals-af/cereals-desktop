@@ -1,0 +1,79 @@
+version: '3'
+
+env:
+  MACOSX_DEPLOYMENT_TARGET: '{{if eq OS "darwin"}}15.0{{end}}'
+
+vars:
+  VERSION:
+    sh: node -p "require('./frontend/package.json').version"
+  BUILD_LDFLAGS: '-X github.com/cereals-af/cereals-desktop/internal/buildinfo.Version={{.VERSION}} {{if eq OS "darwin"}}-extldflags=-mmacosx-version-min=15.0{{end}}'
+
+tasks:
+  icons:
+    desc: Regenerate desktop and tray icons from the committed artwork
+    cmds:
+      - go run ./tools/trayicons
+      - wails3 generate icons -input internal/desktop/assets/appicon.png -macfilename build/darwin/icon.icns -windowsfilename build/windows/icon.ico
+  bindings:
+    desc: Generate TypeScript interfaces from Go services
+    cmds:
+      - wails3 generate bindings -ts -i
+  frontend:
+    desc: Build embedded frontend assets
+    cmds:
+      - task: bindings
+      - npm --prefix frontend run build
+  build:
+    desc: Build the production desktop executable on the current platform
+    cmds:
+      - task: frontend
+      - go build -tags production -trimpath -ldflags "{{.BUILD_LDFLAGS}}" -o bin/cereals{{exeExt}} .
+  dev:
+    desc: Start native desktop development with frontend hot reload
+    cmds:
+      - wails3 dev -config ./build/config.yml -port 9245
+  dev:build:
+    cmds:
+      - task: frontend
+      - go build -ldflags "{{.BUILD_LDFLAGS}}" -o bin/cereals{{exeExt}} .
+  dev:frontend:
+    dir: frontend
+    cmds:
+      - npm run dev -- --port 9245
+  run:
+    cmds:
+      - ./bin/cereals{{exeExt}}
+  check:
+    desc: Run Go and TypeScript checks
+    cmds:
+      - go vet ./...
+      - go test -race ./internal/... ./tools/update-checksums
+      - npm --prefix frontend run lint
+      - npm --prefix frontend run format:check
+      - npm --prefix frontend run typecheck
+      - npm --prefix frontend test
+  test:integration:
+    desc: Test resources and Pod streams against isolated etcd/API Server (requires KUBEBUILDER_ASSETS)
+    preconditions:
+      - sh: test -n "$KUBEBUILDER_ASSETS"
+        msg: Set KUBEBUILDER_ASSETS to an official envtest binary directory
+    cmds:
+      - go test -race -tags integration -count=1 -v ./internal/integration
+  package:macos:
+    desc: Assemble an unsigned macOS app bundle after building
+    platforms: [darwin]
+    cmds:
+      - task: build
+      - go run ./tools/package-macos -version {{.VERSION}}
+  package:installers:
+    desc: Build macOS host-architecture DMG and Windows amd64 setup executable
+    platforms: [darwin]
+    cmds:
+      - task: frontend
+      - bash tools/package-macos.sh
+      - bash tools/package-windows.sh
+      - task: updates:checksums
+  updates:checksums:
+    desc: Generate mandatory SHA256SUMS for the dedicated update payloads
+    cmds:
+      - go run ./tools/update-checksums -version {{.VERSION}}
