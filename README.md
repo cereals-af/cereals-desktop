@@ -32,6 +32,26 @@ cereals 是一个开源 Kubernetes 桌面客户端，使用 **Wails 3、Go、Rea
 
 具体操作与限制见 [使用指南](docs/user-guide.md)。可用功能取决于集群提供的 API、当前身份的 RBAC 权限及容器内可用工具。
 
+## 界面示例
+
+### 工作负载
+
+查看 Deployment 的就绪状态与关联 Pod，并通过列表入口执行扩缩容、查看日志或打开终端。
+
+![工作负载页面：Deployment 列表、就绪状态及扩缩容、日志和终端入口](docs/images/img_v3_02172_4c3ac12d-60b4-4d02-b540-268f93ce9eix.jpg)
+
+### 服务与网络
+
+按命名空间和标签筛选 Service，查看服务类型与 ClusterIP，并通过表单或 YAML 创建资源。
+
+![服务与网络页面：Service 列表、命名空间和标签筛选及资源创建入口](docs/images/744a599c-a623-45ed-a320-ae3c69a6973a.jpeg)
+
+### 节点与空间
+
+查看 Node 的就绪状态、调度状态、Kubelet 版本及当前 CPU、内存用量。
+
+![节点与空间页面：Node 列表、调度状态、Kubelet 版本和资源用量](docs/images/e4974b89-184b-4128-9606-13f482c1d880.jpeg)
+
 ## 下载与安装
 
 在 [GitHub Releases](https://github.com/cereals-af/cereals-desktop/releases) 选择与你的平台匹配的安装包。若尚无可下载版本，可按下方说明从源码构建。
